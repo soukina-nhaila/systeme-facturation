@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+
+<ui:composition template="/templates/template.xhtml">
+    <ui:define name="title">Gestion des Clients</ui:define>
+    
+    <ui:define name="content">
+        <h:form id="clientForm">
+            <p:panel header="Gestion des Clients">
+                <p:toolbar>
+                    <p:toolbarGroup>
+                        <p:commandButton value="Nouveau Client" 
+                                       icon="pi pi-plus"
+                                       actionListener="#{clientBean.nouveauClient}"
+                                       update="clientDialog"
+                                       process="@this"
+                                       oncomplete="PF('clientDialog').show();"
+                                       styleClass="ui-button-success"/>
+                        
+                        <p:commandButton value="Actualiser" 
+                                       icon="pi pi-refresh"
+                                       actionListener="#{clientBean.chargerClients}"
+                                       update="clientTable"
+                                       process="@this"
+                                       styleClass="ui-button-info"/>
+                    </p:toolbarGroup>
+                    
+                    <p:toolbarGroup align="right">
+                        <p:inputText id="recherche" 
+                                   placeholder="Rechercher..." 
+                                   value="#{clientBean.recherche}"/>
+                        <p:commandButton value="Rechercher" 
+                                       icon="pi pi-search"
+                                       actionListener="#{clientBean.rechercher}"
+                                       update="clientTable"
+                                       process="@this recherche"/>
+                    </p:toolbarGroup>
+                </p:toolbar>
+                
+                <p:dataTable id="clientTable" 
+                           value="#{clientBean.clients}" 
+                           var="client"
+                           paginator="true"
+                           rows="10"
+                           emptyMessage="Aucun client trouvé">
+                    
+                    <p:column headerText="Nom" filterBy="#{client.nom}" sortBy="#{client.nom}">
+                        <h:outputText value="#{client.nom}"/>
+                    </p:column>
+                    
+                    <p:column headerText="Prénom" filterBy="#{client.prenom}" sortBy="#{client.prenom}">
+                        <h:outputText value="#{client.prenom}"/>
+                    </p:column>
+                    
+                    <p:column headerText="Email" filterBy="#{client.email}">
+                        <h:outputText value="#{client.email}"/>
+                    </p:column>
+                    
+                    <p:column headerText="Téléphone">
+                        <h:outputText value="#{client.telephone}"/>
+                    </p:column>
+                    
+                    <p:column headerText="Ville">
+                        <h:outputText value="#{client.ville}"/>
+                    </p:column>
+                    
+                    <p:column headerText="Actions" style="width: 150px;">
+                        <p:commandButton icon="pi pi-pencil" 
+                                       actionListener="#{clientBean.editer(client)}"
+                                       update="clientDialog"
+                                       process="@this"
+                                       oncomplete="PF('clientDialog').show();"
+                                       styleClass="ui-button-warning"
+                                       title="Modifier">
+                            <f:param name="clientId" value="#{client.id}"/>
+                        </p:commandButton>
+                        
+                        <p:commandButton icon="pi pi-trash" 
+                                       actionListener="#{clientBean.supprimer(client)}"
+                                       update="clientTable"
+                                       process="@this"
+                                       styleClass="ui-button-danger"
+                                       title="Supprimer">
+                            <p:confirm header="Confirmation" 
+                                     message="Êtes-vous sûr de vouloir supprimer ce client ?"
+                                     icon="pi pi-exclamation-triangle"/>
+                        </p:commandButton>
+                    </p:column>
+                </p:dataTable>
+            </p:panel>
+            
+            <!-- Dialog Client -->
+            <p:dialog id="clientDialog" 
+                    header="#{clientBean.client.id == null ? 'Nouveau Client' : 'Modifier Client'}" 
+                    widgetVar="clientDialog" 
+                    modal="true" 
+                    width="600"
+                    showEffect="fade">
+                
+                <p:panelGrid columns="2" styleClass="form-grid">
+                    <p:outputLabel for="nom" value="Nom *"/>
+                    <p:inputText id="nom" value="#{clientBean.client.nom}" required="true"/>
+                    
+                    <p:outputLabel for="prenom" value="Prénom *"/>
+                    <p:inputText id="prenom" value="#{clientBean.client.prenom}" required="true"/>
+                    
+                    <p:outputLabel for="email" value="Email *"/>
+                    <p:inputText id="email" value="#{clientBean.client.email}" required="true"/>
+                    
+                    <p:outputLabel for="telephone" value="Téléphone"/>
+                    <p:inputText id="telephone" value="#{clientBean.client.telephone}"/>
+                    
+                    <p:outputLabel for="adresse" value="Adresse"/>
+                    <p:inputText id="adresse" value="#{clientBean.client.adresse}"/>
+                    
+                    <p:outputLabel for="codePostal" value="Code Postal"/>
+                    <p:inputText id="codePostal" value="#{clientBean.client.codePostal}"/>
+                    
+                    <p:outputLabel for="ville" value="Ville"/>
+                    <p:inputText id="ville" value="#{clientBean.client.ville}"/>
+                    
+                    <p:outputLabel for="pays" value="Pays"/>
+                    <p:inputText id="pays" value="#{clientBean.client.pays}"/>
+                    
+                    <p:outputLabel for="numeroTVA" value="N° TVA"/>
+                    <p:inputText id="numeroTVA" value="#{clientBean.client.numeroTVA}"/>
+                </p:panelGrid>
+                
+                <f:facet name="footer">
+                    <p:commandButton value="Annuler" 
+                                   icon="pi pi-times"
+                                   actionListener="#{clientBean.annuler}"
+                                   process="@this"
+                                   oncomplete="PF('clientDialog').hide();"
+                                   styleClass="ui-button-secondary"/>
+                    
+                    <p:commandButton value="Sauvegarder" 
+                                   icon="pi pi-check"
+                                   actionListener="#{clientBean.sauvegarder}"
+                                   update="clientTable clientDialog"
+                                   process="clientDialog"
+                                   oncomplete="if (!args.validationFailed) PF('clientDialog').hide();"
+                                   styleClass="ui-button-success"/>
+                </f:facet>
+            </p:dialog>
+            
+            <!-- Dialog de confirmation -->
+            <p:confirmDialog global="true" showEffect="fade" hideEffect="fade">
+                <p:commandButton value="Oui" type="button" styleClass="ui-confirmdialog-yes"/>
+                <p:commandButton value="Non" type="button" styleClass="ui-confirmdialog-no"/>
+            </p:confirmDialog>
+            
+            <p:messages id="messages" showDetail="true" closable="true"/>
+        </h:form>
+    </ui:define>
+</ui:composition>
+</html>

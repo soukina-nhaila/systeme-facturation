@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+
+<ui:composition template="/templates/template.xhtml">
+    <ui:define name="title">Gestion des Clients</ui:define>
+    
+    <ui:define name="content">
+        <h:form id="clientForm">
+            <p:messages id="messages" showDetail="true" closable="true"/>
+            
+            <!-- Liste des clients -->
+            <p:panel header="Liste des Clients" rendered="#{!clientBean.modeEdition and clientBean.clientASupprimer == null}">
+                <p:toolbar>
+                    <p:toolbarGroup>
+                        <p:commandButton value="Nouveau Client" 
+                                       icon="pi pi-plus"
+                                       action="#{clientBean.nouveauClient}"
+                                       ajax="false"
+                                       styleClass="ui-button-success"/>
+                        
+                        <p:commandButton value="Actualiser" 
+                                       icon="pi pi-refresh"
+                                       action="#{clientBean.chargerClients}"
+                                       ajax="false"
+                                       styleClass="ui-button-info"/>
+                    </p:toolbarGroup>
+                    
+                    <p:toolbarGroup align="right">
+                        <p:inputText id="recherche" 
+                                   placeholder="Rechercher..." 
+                                   value="#{clientBean.recherche}"
+                                   style="width: 200px;"/>
+                        <p:commandButton value="Rechercher" 
+                                       icon="pi pi-search"
+                                       action="#{clientBean.rechercher}"
+                                       ajax="false"/>
+                    </p:toolbarGroup>
+                </p:toolbar>
+                
+                <p:dataTable value="#{clientBean.clients}" 
+                           var="client"
+                           paginator="true"
+                           rows="0"
+                           emptyMessage="Aucun client trouvé"
+                           style="margin-top: 20px;">
+                    
+                    <p:column headerText="Nom" sortBy="#{client.nom}">
+                        <h:outputText value="#{client.nom}"/>
+                    </p:column>
+                    
+                    <p:column headerText="Prénom">
+                        <h:outputText value="#{client.prenom}"/>
+                    </p:column>
+                    
+                    <p:column headerText="Email">
+                        <h:outputText value="#{client.email}"/>
+                    </p:column>
+                    
+                    <p:column headerText="Téléphone">
+                        <h:outputText value="#{client.telephone}"/>
+                    </p:column>
+                    
+                    <p:column headerText="Ville">
+                        <h:outputText value="#{client.ville}"/>
+                    </p:column>
+                    
+                    <p:column headerText="Actions" style="width: 120px; text-align: center;">
+                        <p:commandButton icon="pi pi-pencil" 
+                                       action="#{clientBean.editer(client)}"
+                                       ajax="false"
+                                       styleClass="ui-button-warning"
+                                       title="Modifier"
+                                       style="margin-right: 5px;"/>
+                        
+                        <p:commandButton icon="pi pi-trash" 
+                                       action="#{clientBean.confirmerSuppression(client)}"
+                                       ajax="false"
+                                       styleClass="ui-button-danger"
+                                       title="Supprimer"/>
+                    </p:column>
+                </p:dataTable>
+            </p:panel>
+            
+            <!-- Formulaire édition/création -->
+            <p:panel header="#{clientBean.client.id == null ? 'Nouveau Client' : 'Modifier Client'}"
+                    rendered="#{clientBean.modeEdition}">
+                
+                <h:panelGrid columns="2" cellpadding="10" style="width: 100%;">
+                    <h:outputLabel value="Nom *:" style="font-weight: bold;"/>
+                    <p:inputText value="#{clientBean.client.nom}" required="true" style="width: 300px;"/>
+                    
+                    <h:outputLabel value="Prénom *:" style="font-weight: bold;"/>
+                    <p:inputText value="#{clientBean.client.prenom}" required="true" style="width: 300px;"/>
+                    
+                    <h:outputLabel value="Email *:" style="font-weight: bold;"/>
+                    <p:inputText value="#{clientBean.client.email}" required="true" style="width: 300px;"/>
+                    
+                    <h:outputLabel value="Téléphone:" style="font-weight: bold;"/>
+                    <p:inputText value="#{clientBean.client.telephone}" style="width: 300px;"/>
+                    
+                    <h:outputLabel value="Adresse:" style="font-weight: bold;"/>
+                    <p:inputText value="#{clientBean.client.adresse}" style="width: 300px;"/>
+                    
+                    <h:outputLabel value="Code Postal:" style="font-weight: bold;"/>
+                    <p:inputText value="#{clientBean.client.codePostal}" style="width: 300px;"/>
+                    
+                    <h:outputLabel value="Ville:" style="font-weight: bold;"/>
+                    <p:inputText value="#{clientBean.client.ville}" style="width: 300px;"/>
+                    
+                    <h:outputLabel value="Pays:" style="font-weight: bold;"/>
+                    <p:inputText value="#{clientBean.client.pays}" style="width: 300px;"/>
+                    
+                    <h:outputLabel value="N° TVA:" style="font-weight: bold;"/>
+                    <p:inputText value="#{clientBean.client.numeroTVA}" style="width: 300px;"/>
+                </h:panelGrid>
+                
+                <div style="margin-top: 20px; text-align: right;">
+                    <p:commandButton value="Annuler" 
+                                   icon="pi pi-times"
+                                   action="#{clientBean.annuler}"
+                                   ajax="false"
+                                   styleClass="ui-button-secondary"
+                                   immediate="true"
+                                   style="margin-right: 10px;"/>
+                    
+                    <p:commandButton value="Sauvegarder" 
+                                   icon="pi pi-check"
+                                   action="#{clientBean.sauvegarder}"
+                                   ajax="false"
+                                   styleClass="ui-button-success"/>
+                </div>
+            </p:panel>
+            
+            <!-- Confirmation suppression -->
+            <p:panel header="Confirmer la Suppression" rendered="#{clientBean.clientASupprimer != null}">
+                <div style="padding: 20px;">
+                    <p style="font-size: 16px;">
+                        <i class="pi pi-exclamation-triangle" style="color: #f44336; font-size: 24px; margin-right: 10px;"></i>
+                        Voulez-vous vraiment supprimer le client <strong>#{clientBean.clientASupprimer.nom} #{clientBean.clientASupprimer.prenom}</strong> ?
+                    </p>
+                    <p style="color: #999;">Cette action est irréversible.</p>
+                </div>
+                
+                <div style="text-align: right; margin-top: 20px;">
+                    <p:commandButton value="Annuler" 
+                                   icon="pi pi-times"
+                                   action="#{clientBean.annulerSuppression}"
+                                   ajax="false"
+                                   styleClass="ui-button-secondary"
+                                   immediate="true"
+                                   style="margin-right: 10px;"/>
+                    
+                    <p:commandButton value="Supprimer" 
+                                   icon="pi pi-trash"
+                                   action="#{clientBean.supprimer}"
+                                   ajax="false"
+                                   styleClass="ui-button-danger"/>
+                </div>
+            </p:panel>
+        </h:form>
+    </ui:define>
+</ui:composition>
+</html>

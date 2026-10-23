@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence xmlns="http://xmlns.jcp.org/xml/ns/persistence"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/persistence
+             http://xmlns.jcp.org/xml/ns/persistence/persistence_2_2.xsd"
+             version="2.2">
+    
+    <!-- CONFIGURATION MYSQL - Obligatoire pour le projet -->
+    <persistence-unit name="FacturationPU" transaction-type="JTA">
+        <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
+        <jta-data-source>java:/FacturationDS</jta-data-source>
+        
+        <!-- Entités JPA -->
+        <class>com.facturation.entities.Client</class>
+        <class>com.facturation.entities.Produit</class>
+        <class>com.facturation.entities.Facture</class>
+        <class>com.facturation.entities.LigneFacture</class>
+        
+        <properties>
+            <!-- Configuration Hibernate pour MySQL 8 -->
+            <property name="hibernate.dialect" value="org.hibernate.dialect.MySQL8Dialect"/>
+            <property name="hibernate.hbm2ddl.auto" value="update"/>
+            <property name="hibernate.show_sql" value="true"/>
+            <property name="hibernate.format_sql" value="true"/>
+            <property name="hibernate.use_sql_comments" value="true"/>
+            
+            <!-- Pool de connexions -->
+            <property name="hibernate.connection.pool_size" value="10"/>
+            
+            <!-- Cache -->
+            <property name="hibernate.cache.use_second_level_cache" value="false"/>
+            <property name="hibernate.cache.use_query_cache" value="false"/>
+            
+            <!-- Support des colonnes générées automatiquement -->
+            <property name="hibernate.jdbc.use_get_generated_keys" value="true"/>
+        </properties>
+    </persistence-unit>
+</persistence>

@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+
+<ui:composition template="/templates/template.xhtml">
+    <ui:define name="title">Gestion des Produits</ui:define>
+    
+    <ui:define name="content">
+        <h:form id="produitForm">
+            <p:messages id="messages" showDetail="true" closable="true"/>
+            
+            <!-- Liste des produits -->
+            <p:panel header="Liste des Produits" rendered="#{!produitBean.modeEdition and produitBean.produitASupprimer == null}">
+                <p:toolbar>
+                    <p:toolbarGroup>
+                        <p:commandButton value="Nouveau Produit" 
+                                       icon="pi pi-plus"
+                                       action="#{produitBean.nouveauProduit}"
+                                       ajax="false"
+                                       styleClass="ui-button-success"/>
+                        
+                        <p:commandButton value="Actualiser" 
+                                       icon="pi pi-refresh"
+                                       action="#{produitBean.chargerProduits}"
+                                       ajax="false"
+                                       styleClass="ui-button-info"/>
+                        
+                        <p:selectBooleanCheckbox id="afficherInactifs" 
+                                               value="#{produitBean.afficherInactifs}"/>
+                        <h:outputLabel for="afficherInactifs" value="Afficher inactifs" style="margin-left: 5px; margin-right: 10px;"/>
+                        
+                        <p:commandButton value="Filtrer" 
+                                       icon="pi pi-filter"
+                                       action="#{produitBean.filtrer}"
+                                       ajax="false"
+                                       styleClass="ui-button-secondary"/>
+                    </p:toolbarGroup>
+                    
+                    <p:toolbarGroup align="right">
+                        <p:inputText id="recherche" 
+                                   placeholder="Rechercher..." 
+                                   value="#{produitBean.recherche}"
+                                   style="width: 200px;"/>
+                        <p:commandButton value="Rechercher" 
+                                       icon="pi pi-search"
+                                       action="#{produitBean.rechercher}"
+                                       ajax="false"/>
+                    </p:toolbarGroup>
+                </p:toolbar>
+                
+                <p:dataTable value="#{produitBean.produits}" 
+                           var="produit"
+                           paginator="true"
+                           rows="0"
+                           emptyMessage="Aucun produit trouvé"
+                           style="margin-top: 20px;">
+                    
+                    <p:column headerText="Référence">
+                        <h:outputText value="#{produit.reference}"/>
+                    </p:column>
+                    
+                    <p:column headerText="Désignation">
+                        <h:outputText value="#{produit.designation}"/>
+                    </p:column>
+                    
+                    <p:column headerText="Prix HT">
+                        <h:outputText value="#{produit.prixUnitaireHT}">
+                            <f:convertNumber type="currency" currencySymbol="€"/>
+                        </h:outputText>
+                    </p:column>
+                    
+                    <p:column headerText="TVA">
+                        <h:outputText value="#{produit.tauxTVA} %"/>
+                    </p:column>
+                    
+                    <p:column headerText="Statut">
+                        <h:outputText value="#{produit.actif ? 'Actif' : 'Inactif'}" 
+                                    style="color: #{produit.actif ? 'green' : 'red'}; font-weight: bold;"/>
+                    </p:column>
+                    
+                    <p:column headerText="Actions" style="width: 150px; text-align: center;">
+                        <p:commandButton icon="pi pi-pencil" 
+                                       action="#{produitBean.editer(produit)}"
+                                       ajax="false"
+                                       styleClass="ui-button-warning"
+                                       title="Modifier"
+                                       style="margin-right: 5px;"/>
+                        
+                        <p:commandButton icon="#{produit.actif ? 'pi pi-ban' : 'pi pi-check'}" 
+                                       action="#{produitBean.toggleActif(produit)}"
+                                       ajax="false"
+                                       styleClass="#{produit.actif ? 'ui-button-secondary' : 'ui-button-success'}"
+                                       title="#{produit.actif ? 'Désactiver' : 'Activer'}"
+                                       style="margin-right: 5px;"/>
+                        
+                        <p:commandButton icon="pi pi-trash" 
+                                       action="#{produitBean.confirmerSuppression(produit)}"
+                                       ajax="false"
+                                       styleClass="ui-button-danger"
+                                       title="Supprimer"/>
+                    </p:column>
+                </p:dataTable>
+            </p:panel>
+            
+            <!-- Formulaire édition/création -->
+            <p:panel header="#{produitBean.produit.id == null ? 'Nouveau Produit' : 'Modifier Produit'}"
+                    rendered="#{produitBean.modeEdition}">
+                
+                <h:panelGrid columns="2" cellpadding="10" style="width: 100%;">
+                    <h:outputLabel value="Référence *:" style="font-weight: bold;"/>
+                    <p:inputText value="#{produitBean.produit.reference}" required="true" style="width: 300px;"/>
+                    
+                    <h:outputLabel value="Désignation *:" style="font-weight: bold;"/>
+                    <p:inputText value="#{produitBean.produit.designation}" required="true" style="width: 300px;"/>
+                    
+                    <h:outputLabel value="Description:" style="font-weight: bold;"/>
+                    <p:inputTextarea value="#{produitBean.produit.description}" rows="3" style="width: 300px;"/>
+                    
+                    <h:outputLabel value="Prix Unitaire HT *:" style="font-weight: bold;"/>
+                    <p:inputNumber value="#{produitBean.produit.prixUnitaireHT}" 
+                                 required="true" 
+                                 minFractionDigits="2" 
+                                 maxFractionDigits="2"
+                                 style="width: 300px;"/>
+                    
+                    <h:outputLabel value="Taux TVA (%) *:" style="font-weight: bold;"/>
+                    <p:inputNumber value="#{produitBean.produit.tauxTVA}" 
+                                 required="true" 
+                                 minFractionDigits="2" 
+                                 maxFractionDigits="2"
+                                 style="width: 300px;"/>
+                    
+                    <h:outputLabel value="Unité:" style="font-weight: bold;"/>
+                    <p:inputText value="#{produitBean.produit.unite}" style="width: 300px;"/>
+                    
+                    <h:outputLabel value="Actif:" style="font-weight: bold;"/>
+                    <p:selectBooleanCheckbox value="#{produitBean.produit.actif}"/>
+                </h:panelGrid>
+                
+                <div style="margin-top: 20px; text-align: right;">
+                    <p:commandButton value="Annuler" 
+                                   icon="pi pi-times"
+                                   action="#{produitBean.annuler}"
+                                   ajax="false"
+                                   styleClass="ui-button-secondary"
+                                   immediate="true"
+                                   style="margin-right: 10px;"/>
+                    
+                    <p:commandButton value="Sauvegarder" 
+                                   icon="pi pi-check"
+                                   action="#{produitBean.sauvegarder}"
+                                   ajax="false"
+                                   styleClass="ui-button-success"/>
+                </div>
+            </p:panel>
+            
+            <!-- Confirmation suppression -->
+            <p:panel header="Confirmer la Suppression" rendered="#{produitBean.produitASupprimer != null}">
+                <div style="padding: 20px;">
+                    <p style="font-size: 16px;">
+                        <i class="pi pi-exclamation-triangle" style="color: #f44336; font-size: 24px; margin-right: 10px;"></i>
+                        Voulez-vous vraiment supprimer le produit <strong>#{produitBean.produitASupprimer.designation}</strong> ?
+                    </p>
+                    <p style="color: #999;">Cette action est irréversible.</p>
+                </div>
+                
+                <div style="text-align: right; margin-top: 20px;">
+                    <p:commandButton value="Annuler" 
+                                   icon="pi pi-times"
+                                   action="#{produitBean.annulerSuppression}"
+                                   ajax="false"
+                                   styleClass="ui-button-secondary"
+                                   immediate="true"
+                                   style="margin-right: 10px;"/>
+                    
+                    <p:commandButton value="Supprimer" 
+                                   icon="pi pi-trash"
+                                   action="#{produitBean.supprimer}"
+                                   ajax="false"
+                                   styleClass="ui-button-danger"/>
+                </div>
+            </p:panel>
+        </h:form>
+    </ui:define>
+</ui:composition>
+</html>

@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html">
+<h:head>
+    <meta charset="UTF-8"/>
+    <title>Test - Système de Facturation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+        }
+        .success {
+            color: #27ae60;
+            font-weight: bold;
+        }
+        .menu {
+            margin-top: 30px;
+        }
+        .menu a {
+            display: block;
+            padding: 15px;
+            margin: 10px 0;
+            background: #3498db;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background 0.3s;
+        }
+        .menu a:hover {
+            background: #2980b9;
+        }
+    </style>
+</h:head>
+<h:body>
+    <div class="container">
+        <h1>✅ Application Déployée avec Succès !</h1>
+        
+        <p class="success">Le système de facturation est opérationnel.</p>
+        
+        <div class="menu">
+            <h2>Navigation :</h2>
+            
+            <a href="pages/clients.xhtml">
+                👥 Gestion des Clients
+            </a>
+            
+            <a href="pages/produits.xhtml">
+                📦 Gestion des Produits
+            </a>
+            
+            <a href="pages/factures.xhtml">
+                📄 Gestion des Factures
+            </a>
+            
+            <a href="pages/dashboard.xhtml">
+                📊 Tableau de Bord
+            </a>
+        </div>
+        
+        <hr style="margin: 30px 0;"/>
+        
+        <h3>Informations Techniques :</h3>
+        <ul>
+            <li><strong>Serveur :</strong> WildFly 27</li>
+            <li><strong>Base de données :</strong> MySQL (facturation)</li>
+            <li><strong>Technologies :</strong> EJB 3.2 + JPA 2.2 + JSF 2.3</li>
+        </ul>
+        
+        <p style="margin-top: 30px; font-size: 0.9em; color: #777;">
+            Master DevOps &amp; Cloud Computing - Système de Facturation
+        </p>
+    </div>
+</h:body>
+</html>

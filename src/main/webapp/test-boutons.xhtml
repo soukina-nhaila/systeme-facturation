@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui">
+<h:head>
+    <title>Test Simple</title>
+</h:head>
+<h:body>
+    <h1>Test Boutons PrimeFaces</h1>
+    
+    <h:form id="testForm">
+        <h:outputText value="Valeur actuelle: #{clientBean.recherche}"/>
+        <br/><br/>
+        
+        <p:inputText id="test" value="#{clientBean.recherche}" placeholder="Tapez quelque chose"/>
+        <br/><br/>
+        
+        <!-- Test 1: Bouton simple -->
+        <p:commandButton value="Test 1: Action Simple" 
+                       actionListener="#{clientBean.chargerClients}"
+                       process="@this"
+                       update="@form"/>
+        <br/><br/>
+        
+        <!-- Test 2: Bouton avec champ -->
+        <p:commandButton value="Test 2: Avec Champ" 
+                       actionListener="#{clientBean.rechercher}"
+                       process="@this test"
+                       update="@form"/>
+        <br/><br/>
+        
+        <!-- Test 3: Ajax false -->
+        <p:commandButton value="Test 3: Sans Ajax" 
+                       actionListener="#{clientBean.chargerClients}"
+                       ajax="false"/>
+        <br/><br/>
+        
+        <h:commandButton value="Test 4: H:CommandButton Standard" 
+                       action="#{clientBean.chargerClients}"/>
+        <br/><br/>
+        
+        <p:messages id="messages" showDetail="true"/>
+        
+        <h3>Nombre de clients: #{clientBean.clients.size()}</h3>
+        
+        <p:dataTable value="#{clientBean.clients}" var="c">
+            <p:column headerText="Nom">
+                <h:outputText value="#{c.nom}"/>
+            </p:column>
+        </p:dataTable>
+    </h:form>
+</h:body>
+</html>

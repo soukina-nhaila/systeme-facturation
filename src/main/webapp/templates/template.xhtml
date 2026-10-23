@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+<h:head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title><ui:insert name="title">Système de Facturation</ui:insert></title>
+    <h:outputStylesheet library="css" name="style.css"/>
+</h:head>
+<h:body>
+    <div class="layout-wrapper">
+        <!-- En-tête -->
+        <header class="layout-header">
+            <div class="header-content">
+                <h1>📊 Système de Facturation</h1>
+                <p:menubar>
+                    <p:menuitem value="Tableau de bord" icon="pi pi-home" outcome="/pages/dashboard.xhtml"/>
+                    <p:menuitem value="Clients" icon="pi pi-users" outcome="/pages/clients.xhtml"/>
+                    <p:menuitem value="Produits" icon="pi pi-box" outcome="/pages/produits.xhtml"/>
+                    <p:menuitem value="Factures" icon="pi pi-file" outcome="/pages/factures.xhtml"/>
+                </p:menubar>
+            </div>
+        </header>
+        
+        <!-- Contenu principal -->
+        <main class="layout-content">
+            <p:growl id="messages" showDetail="true" sticky="false" life="3000"/>
+            
+            <div class="content-wrapper">
+                <ui:insert name="content">
+                    <!-- Le contenu de chaque page sera inséré ici -->
+                </ui:insert>
+            </div>
+        </main>
+        
+        <!-- Pied de page -->
+        <footer class="layout-footer">
+            <p>© 2026 Système de Facturation - Master DevOps &amp; Cloud Computing</p>
+        </footer>
+    </div>
+</h:body>
+</html>

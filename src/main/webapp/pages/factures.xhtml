@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+
+<ui:composition template="/templates/template.xhtml">
+    <ui:define name="title">Gestion des Factures</ui:define>
+    
+    <ui:define name="content">
+        <h:form id="factureForm">
+            <p:messages id="messages" showDetail="true" closable="true"/>
+            
+            <!-- Liste des factures -->
+            <p:panel header="Liste des Factures" rendered="#{!factureBean.modeEdition and !factureBean.modeVoir and factureBean.factureASupprimer == null}">
+                <p:toolbar>
+                    <p:toolbarGroup>
+                        <p:commandButton value="Nouvelle Facture" 
+                                       icon="pi pi-plus"
+                                       action="#{factureBean.nouvelleFacture}"
+                                       ajax="false"
+                                       styleClass="ui-button-success"/>
+                        
+                        <p:commandButton value="Actualiser" 
+                                       icon="pi pi-refresh"
+                                       action="#{factureBean.chargerFactures}"
+                                       ajax="false"
+                                       styleClass="ui-button-info"/>
+                    </p:toolbarGroup>
+                    
+                    <p:toolbarGroup align="right">
+                        <p:inputText id="recherche" 
+                                   placeholder="Numéro facture..." 
+                                   value="#{factureBean.recherche}"
+                                   style="width: 200px;"/>
+                        <p:commandButton value="Rechercher" 
+                                       icon="pi pi-search"
+                                       action="#{factureBean.rechercher}"
+                                       ajax="false"/>
+                    </p:toolbarGroup>
+                </p:toolbar>
+                
+                <p:dataTable value="#{factureBean.factures}" 
+                           var="facture"
+                           paginator="true"
+                           rows="10"
+                           emptyMessage="Aucune facture trouvée"
+                           style="margin-top: 20px;">
+                    
+                    <p:column headerText="N° Facture">
+                        <h:outputText value="#{facture.numeroFacture}"/>
+                    </p:column>
+                    
+                    <p:column headerText="Client">
+                        <h:outputText value="#{facture.client.nom} #{facture.client.prenom}"/>
+                    </p:column>
+                    
+                    <p:column headerText="Date">
+                        <h:outputText value="#{facture.dateFacture}" converter="localDateConverter"/>
+                    </p:column>
+                    
+                    <p:column headerText="Montant TTC">
+                        <h:outputText value="#{facture.montantTTC}">
+                            <f:convertNumber type="currency" currencySymbol="€"/>
+                        </h:outputText>
+                    </p:column>
+                    
+                    <p:column headerText="Statut">
+                        <h:outputText value="#{facture.statut}" 
+                                    style="padding: 5px 10px; border-radius: 3px; background-color: #{facture.statut == 'BROUILLON' ? '#999' : facture.statut == 'VALIDEE' ? '#2196F3' : facture.statut == 'ENVOYEE' ? '#FF9800' : '#4CAF50'}; color: white; font-weight: bold;"/>
+                    </p:column>
+                    
+                    <p:column headerText="Actions" style="width: 250px; text-align: center;">
+                        <p:commandButton icon="pi pi-eye" 
+                                       action="#{factureBean.voir(facture)}"
+                                       ajax="false"
+                                       styleClass="ui-button-info"
+                                       title="Voir"
+                                       style="margin-right: 3px;"/>
+                        
+                        <p:commandButton icon="pi pi-pencil" 
+                                       action="#{factureBean.editer(facture)}"
+                                       ajax="false"
+                                       styleClass="ui-button-warning"
+                                       title="Modifier"
+                                       disabled="#{facture.statut == 'PAYEE'}"
+                                       style="margin-right: 3px;"/>
+                        
+                        <p:commandButton icon="pi pi-check" 
+                                       action="#{factureBean.marquerValidee(facture)}"
+                                       ajax="false"
+                                       styleClass="ui-button-success"
+                                       title="Valider"
+                                       disabled="#{facture.statut != 'BROUILLON'}"
+                                       style="margin-right: 3px;"/>
+                        
+                        <p:commandButton icon="pi pi-dollar" 
+                                       action="#{factureBean.marquerPayee(facture)}"
+                                       ajax="false"
+                                       styleClass="ui-button-success"
+                                       title="Marquer Payée"
+                                       disabled="#{facture.statut == 'BROUILLON' or facture.statut == 'PAYEE'}"
+                                       style="margin-right: 3px;"/>
+                        
+                        <p:commandButton icon="pi pi-file-pdf" 
+                                       action="#{factureBean.genererPDF(facture)}"
+                                       ajax="false"
+                                       styleClass="ui-button-danger"
+                                       title="PDF"
+                                       style="margin-right: 3px;"/>
+                        
+                        <p:commandButton icon="pi pi-trash" 
+                                       action="#{factureBean.confirmerSuppression(facture)}"
+                                       ajax="false"
+                                       styleClass="ui-button-danger"
+                                       title="Supprimer"
+                                       disabled="#{facture.statut == 'PAYEE'}"/>
+                    </p:column>
+                </p:dataTable>
+            </p:panel>
+            
+            <!-- Formulaire édition/création -->
+            <p:panel header="#{factureBean.facture.id == null ? 'Nouvelle Facture' : 'Modifier Facture'}"
+                    rendered="#{factureBean.modeEdition}">
+                
+                <h:panelGrid columns="2" cellpadding="10" style="width: 100%; margin-bottom: 20px;">
+                    <h:outputLabel value="Client *:" style="font-weight: bold;"/>
+                    <p:selectOneMenu value="#{factureBean.facture.client}" 
+                                   converter="omnifaces.SelectItemsConverter"
+                                   required="true"
+                                   style="width: 300px;">
+                        <f:selectItem itemLabel="-- Sélectionner un client --" itemValue="#{null}"/>
+                        <f:selectItems value="#{factureBean.clientsDisponibles}" 
+                                     var="c" 
+                                     itemLabel="#{c.nom} #{c.prenom}" 
+                                     itemValue="#{c}"/>
+                    </p:selectOneMenu>
+                    
+                    <h:outputLabel value="Date Facture *:" style="font-weight: bold;"/>
+                    <p:calendar value="#{factureBean.dateFactureTemp}" 
+                              pattern="dd/MM/yyyy" 
+                              required="true"
+                              showOn="button"
+                              style="width: 300px;"/>
+                    
+                    <h:outputLabel value="Date Échéance:" style="font-weight: bold;"/>
+                    <p:calendar value="#{factureBean.dateEcheanceTemp}" 
+                              pattern="dd/MM/yyyy"
+                              showOn="button"
+                              style="width: 300px;"/>
+                    
+                    <h:outputLabel value="Remarques:" style="font-weight: bold;"/>
+                    <p:inputTextarea value="#{factureBean.facture.remarques}" rows="3" style="width: 300px;"/>
+                </h:panelGrid>
+                
+                <!-- Lignes de facture -->
+                <p:panel header="Lignes de la Facture" style="margin-bottom: 20px;">
+                    <p:dataTable value="#{factureBean.facture.lignes}" 
+                               var="ligne"
+                               emptyMessage="Aucune ligne"
+                               style="margin-bottom: 10px;">
+                        
+                        <p:column headerText="Produit">
+                            <h:outputText value="#{ligne.produit.designation}"/>
+                        </p:column>
+                        
+                        <p:column headerText="Quantité">
+                            <h:outputText value="#{ligne.quantite}"/>
+                        </p:column>
+                        
+                        <p:column headerText="Prix HT">
+                            <h:outputText value="#{ligne.prixUnitaireHT}">
+                                <f:convertNumber type="currency" currencySymbol="€"/>
+                            </h:outputText>
+                        </p:column>
+                        
+                        <p:column headerText="TVA">
+                            <h:outputText value="#{ligne.tauxTVA} %"/>
+                        </p:column>
+                        
+                        <p:column headerText="Remise">
+                            <h:outputText value="#{ligne.remise} %"/>
+                        </p:column>
+                        
+                        <p:column headerText="Total HT">
+                            <h:outputText value="#{ligne.montantHT}">
+                                <f:convertNumber type="currency" currencySymbol="€"/>
+                            </h:outputText>
+                        </p:column>
+                        
+                        <p:column headerText="Total TTC">
+                            <h:outputText value="#{ligne.montantTTC}">
+                                <f:convertNumber type="currency" currencySymbol="€"/>
+                            </h:outputText>
+                        </p:column>
+                        
+                        <p:column headerText="Action" style="width: 80px; text-align: center;">
+                            <p:commandButton icon="pi pi-trash" 
+                                           action="#{factureBean.supprimerLigne(ligne)}"
+                                           ajax="false"
+                                           styleClass="ui-button-danger"
+                                           title="Supprimer"/>
+                        </p:column>
+                    </p:dataTable>
+                    
+                    <!-- Ajouter ligne -->
+                    <h:panelGrid columns="7" cellpadding="5" style="margin-top: 10px;">
+                        <p:selectOneMenu value="#{factureBean.nouvelleLigne.produit}" 
+                                       converter="omnifaces.SelectItemsConverter"
+                                       style="width: 180px;">
+                            <f:selectItem itemLabel="-- Produit --" itemValue="#{null}"/>
+                            <f:selectItems value="#{factureBean.produitsDisponibles}" 
+                                         var="p" 
+                                         itemLabel="#{p.designation}" 
+                                         itemValue="#{p}"/>
+                        </p:selectOneMenu>
+                        
+                        <p:inputNumber value="#{factureBean.nouvelleLigne.quantite}" 
+                                     placeholder="Qté"
+                                     minFractionDigits="0"
+                                     style="width: 80px;"/>
+                        
+                        <p:inputNumber value="#{factureBean.nouvelleLigne.prixUnitaireHT}" 
+                                     placeholder="Prix HT"
+                                     minFractionDigits="2"
+                                     style="width: 100px;"/>
+                        
+                        <p:inputNumber value="#{factureBean.nouvelleLigne.tauxTVA}" 
+                                     placeholder="TVA %"
+                                     minFractionDigits="2"
+                                     style="width: 80px;"/>
+                        
+                        <p:inputNumber value="#{factureBean.nouvelleLigne.remise}" 
+                                     placeholder="Remise %"
+                                     minFractionDigits="2"
+                                     style="width: 80px;"/>
+                        
+                        <p:commandButton value="Ajouter Ligne" 
+                                       icon="pi pi-plus"
+                                       action="#{factureBean.ajouterLigne}"
+                                       ajax="false"
+                                       styleClass="ui-button-success"/>
+                        
+                        <p:commandButton value="Calculer" 
+                                       icon="pi pi-calculator"
+                                       action="#{factureBean.calculerTotaux}"
+                                       ajax="false"
+                                       styleClass="ui-button-info"/>
+                    </h:panelGrid>
+                </p:panel>
+                
+                <!-- Totaux -->
+                <h:panelGrid columns="2" cellpadding="5" style="width: 300px; float: right; margin-bottom: 20px;">
+                    <h:outputLabel value="Total HT:" style="font-weight: bold; text-align: right;"/>
+                    <h:outputText value="#{factureBean.facture.montantHT}" style="text-align: right;">
+                        <f:convertNumber type="currency" currencySymbol="€"/>
+                    </h:outputText>
+                    
+                    <h:outputLabel value="Total TVA:" style="font-weight: bold; text-align: right;"/>
+                    <h:outputText value="#{factureBean.facture.montantTVA}" style="text-align: right;">
+                        <f:convertNumber type="currency" currencySymbol="€"/>
+                    </h:outputText>
+                    
+                    <h:outputLabel value="Total TTC:" style="font-weight: bold; font-size: 16px; text-align: right;"/>
+                    <h:outputText value="#{factureBean.facture.montantTTC}" style="text-align: right; font-weight: bold; font-size: 16px;">
+                        <f:convertNumber type="currency" currencySymbol="€"/>
+                    </h:outputText>
+                </h:panelGrid>
+                
+                <div style="clear: both; margin-top: 20px; text-align: right;">
+                    <p:commandButton value="Annuler" 
+                                   icon="pi pi-times"
+                                   action="#{factureBean.annuler}"
+                                   ajax="false"
+                                   styleClass="ui-button-secondary"
+                                   immediate="true"
+                                   style="margin-right: 10px;"/>
+                    
+                    <p:commandButton value="Sauvegarder" 
+                                   icon="pi pi-check"
+                                   action="#{factureBean.sauvegarder}"
+                                   ajax="false"
+                                   styleClass="ui-button-success"/>
+                </div>
+            </p:panel>
+            
+            <!-- Mode Voir (lecture seule) -->
+            <p:panel header="Facture #{factureBean.facture.numeroFacture}" rendered="#{factureBean.modeVoir}">
+                
+                <h:panelGrid columns="2" cellpadding="10" style="width: 100%; margin-bottom: 20px;">
+                    <h:outputLabel value="Client:" style="font-weight: bold;"/>
+                    <h:outputText value="#{factureBean.facture.client.nom} #{factureBean.facture.client.prenom}"/>
+                    
+                    <h:outputLabel value="Date Facture:" style="font-weight: bold;"/>
+                    <h:outputText value="#{factureBean.facture.dateFacture}" converter="localDateConverter"/>
+                    
+                    <h:outputLabel value="Date Échéance:" style="font-weight: bold;"/>
+                    <h:outputText value="#{factureBean.facture.dateEcheance}" converter="localDateConverter"/>
+                    
+                    <h:outputLabel value="Statut:" style="font-weight: bold;"/>
+                    <h:outputText value="#{factureBean.facture.statut}"/>
+                    
+                    <h:outputLabel value="Remarques:" style="font-weight: bold;"/>
+                    <h:outputText value="#{factureBean.facture.remarques}"/>
+                </h:panelGrid>
+                
+                <p:panel header="Lignes">
+                    <p:dataTable value="#{factureBean.facture.lignes}" var="ligne">
+                        <p:column headerText="Produit">
+                            <h:outputText value="#{ligne.produit.designation}"/>
+                        </p:column>
+                        
+                        <p:column headerText="Quantité">
+                            <h:outputText value="#{ligne.quantite}"/>
+                        </p:column>
+                        
+                        <p:column headerText="Prix HT">
+                            <h:outputText value="#{ligne.prixUnitaireHT}">
+                                <f:convertNumber type="currency" currencySymbol="€"/>
+                            </h:outputText>
+                        </p:column>
+                        
+                        <p:column headerText="TVA">
+                            <h:outputText value="#{ligne.tauxTVA} %"/>
+                        </p:column>
+                        
+                        <p:column headerText="Total TTC">
+                            <h:outputText value="#{ligne.montantTTC}">
+                                <f:convertNumber type="currency" currencySymbol="€"/>
+                            </h:outputText>
+                        </p:column>
+                    </p:dataTable>
+                </p:panel>
+                
+                <h:panelGrid columns="2" cellpadding="5" style="width: 300px; float: right; margin: 20px 0;">
+                    <h:outputLabel value="Total HT:" style="font-weight: bold; text-align: right;"/>
+                    <h:outputText value="#{factureBean.facture.montantHT}" style="text-align: right;">
+                        <f:convertNumber type="currency" currencySymbol="€"/>
+                    </h:outputText>
+                    
+                    <h:outputLabel value="Total TVA:" style="font-weight: bold; text-align: right;"/>
+                    <h:outputText value="#{factureBean.facture.montantTVA}" style="text-align: right;">
+                        <f:convertNumber type="currency" currencySymbol="€"/>
+                    </h:outputText>
+                    
+                    <h:outputLabel value="Total TTC:" style="font-weight: bold; font-size: 16px; text-align: right;"/>
+                    <h:outputText value="#{factureBean.facture.montantTTC}" style="text-align: right; font-weight: bold; font-size: 16px;">
+                        <f:convertNumber type="currency" currencySymbol="€"/>
+                    </h:outputText>
+                </h:panelGrid>
+                
+                <div style="clear: both; margin-top: 20px; text-align: right;">
+                    <p:commandButton value="Retour" 
+                                   icon="pi pi-arrow-left"
+                                   action="#{factureBean.retourListe}"
+                                   ajax="false"
+                                   styleClass="ui-button-secondary"
+                                   immediate="true"
+                                   style="margin-right: 10px;"/>
+                    
+                    <p:commandButton value="Télécharger PDF" 
+                                   icon="pi pi-file-pdf"
+                                   action="#{factureBean.genererPDF(factureBean.facture)}"
+                                   ajax="false"
+                                   styleClass="ui-button-danger"/>
+                </div>
+            </p:panel>
+            
+            <!-- Confirmation suppression -->
+            <p:panel header="Confirmer la Suppression" rendered="#{factureBean.factureASupprimer != null}">
+                <div style="padding: 20px;">
+                    <p style="font-size: 16px;">
+                        <i class="pi pi-exclamation-triangle" style="color: #f44336; font-size: 24px; margin-right: 10px;"></i>
+                        Voulez-vous vraiment supprimer la facture <strong>#{factureBean.factureASupprimer.numeroFacture}</strong> ?
+                    </p>
+                    <p style="color: #999;">Cette action est irréversible.</p>
+                </div>
+                
+                <div style="text-align: right; margin-top: 20px;">
+                    <p:commandButton value="Annuler" 
+                                   icon="pi pi-times"
+                                   action="#{factureBean.annulerSuppression}"
+                                   ajax="false"
+                                   styleClass="ui-button-secondary"
+                                   immediate="true"
+                                   style="margin-right: 10px;"/>
+                    
+                    <p:commandButton value="Supprimer" 
+                                   icon="pi pi-trash"
+                                   action="#{factureBean.supprimer}"
+                                   ajax="false"
+                                   styleClass="ui-button-danger"/>
+                </div>
+            </p:panel>
+        </h:form>
+    </ui:define>
+</ui:composition>
+</html>
